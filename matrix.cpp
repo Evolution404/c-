@@ -1,59 +1,158 @@
-#include"matrix.h"
-#include<iostream>
+#include "matrix.h"
+#include <iostream>
 
 using namespace std;
-Matrix::Matrix(int l,int r)
+Matrix::Matrix(int r, int c)
 {
-    lines = l;
     rows = r;
-    data = new double[l*r];
-    memset(data,0,l*r*sizeof(double));
+    columns = c;
+    data = new double[c * r];
+    memset(data, 0, c * r * sizeof(double));
 }
 
 Matrix::~Matrix()
 {
-    lines = 0;
+    columns = 0;
     rows = 0;
-    if(data!=NULL)
-    {
-        delete data;
-    }
 }
 
-double& Matrix::operator ()(int i, int j)
+int Matrix::getRows()
+{
+    return rows;
+}
+
+int Matrix::getColumns()
+{
+    return columns;
+}
+
+double &Matrix::operator()(int i, int j)
 {
     // Unsafe
-    return *(data + i*lines+j); 
+    return *(data + i * columns + j);
 }
 
-void Matrix::input()
+ostream &operator<<(ostream &os, Matrix m)
 {
-    int d[lines][rows];
-    cout<<"Please enter the matrix by lines";
-    for(int i =0;i<lines;i++)
+    string rs = "";
+    for (int i = 0; i < m.rows; i++)
     {
-        for(int j=0;j<rows;j++)
+        for (int j = 0; j < m.columns; j++)
         {
-            cin>>d[i][j];
+
+            os << m(i, j) << " ";
         }
+        os << endl;
     }
-    data = d[0];
-    for(int i=0;i<lines;i++)
-    {
-        for(int j=0;j<rows;j++)
-        {
-            cout<<d[i][j];
-        }
-    }
+    return os;
 }
 
-bool Matrix::operator == (const Matrix& m)//重载 ==
+istream &operator>>(istream &is, Matrix m)
+{
+    for (int i = 0; i < m.rows; i++)
+    {
+        for (int j = 0; j < m.columns; j++)
+        {
+            is >> m(i, j);
+        }
+    }
+    return is;
+}
+
+bool Matrix::operator==(Matrix &m) //重载 ==
 {
     bool rs = false;
-    if(this->rows==m.rows && this->lines==m.lines)
+    if (this->rows == m.rows && this->columns == m.columns)
     {
-
+        rs = true;
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                if (!((*this)(i, j) == m(i, j)))
+                    rs = false;
+            }
+        }
     }
-}   
+    return rs;
+}
 
+bool Matrix::operator!=(Matrix &m) //重载 !=
+{
+    return !(*this == m);
+}
 
+Matrix Matrix::operator+(Matrix &m)
+{
+    if (this->rows == m.rows && this->columns == m.columns)
+    {
+        Matrix sum(this->rows, this->columns);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->columns; j++)
+            {
+                sum(i, j) = (*this)(i, j) + m(i, j);
+            }
+        }
+        return sum;
+    }
+    Matrix sum(0, 0);
+    return sum;
+}
+
+Matrix Matrix::operator-(Matrix &m)
+{
+
+    if (this->rows == m.rows && this->columns == m.columns)
+    {
+        Matrix min(this->rows, this->columns);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->columns; j++)
+            {
+                min(i, j) = (*this)(i, j) - m(i, j);
+            }
+        }
+        return min;
+    }
+    Matrix min(0, 0);
+    return min;
+}
+
+Matrix Matrix::operator*(Matrix &m)
+{
+
+    if (this->rows == m.columns)
+    {
+        Matrix product(this->rows, m.columns);
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < m.columns; j++)
+            {
+                double mul = 0;
+                for (int p = 0; p < this->rows; p++)
+                {
+                    mul += (*this)(i, p) * m(p, j);
+                }
+                product(i, j) = mul;
+            }
+        }
+        return product;
+    }
+    Matrix product(0, 0);
+    return product;
+}
+
+void Matrix::operator+=(Matrix &m)
+{
+    if (this->rows == m.rows && this->columns == m.columns)
+    {
+        for (int i = 0; i < this->rows; i++)
+        {
+            for (int j = 0; j < this->columns; j++)
+            {
+                (*this)(i,j)+=m(i,j);
+            }
+        }
+    }
+}
